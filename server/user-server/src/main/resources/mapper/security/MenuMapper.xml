@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xh.security.mapper.MenuMapper">
+
+    <select id="selectPermsByUserId" resultType="java.lang.String">
+        SELECT
+            DISTINCT m.`perms`
+        FROM
+            sys_user_role ur
+                LEFT JOIN `sys_role` r ON ur.`role_id` = r.`id`
+                LEFT JOIN `sys_role_menu` rm ON ur.`role_id` = rm.`role_id`
+                LEFT JOIN `sys_menu` m ON m.`id` = rm.`menu_id`
+        WHERE
+            user_id = #{userid}
+          AND r.`status` = 0
+          AND m.`status` = 0
+    </select>
+    <select id="selectPermsByOtherUserId" resultType="java.lang.String">
+        SELECT
+            DISTINCT m.perms
+        FROM
+            `sys_user_role` ur
+                LEFT JOIN `sys_role_menu` rm ON ur.`role_id` = rm.`role_id`
+                LEFT JOIN `sys_menu` m ON m.`id` = rm.`menu_id`
+        WHERE
+            ur.`user_id` = #{userId} AND
+            m.`menu_type` IN ('C','F') AND
+            m.`status` = 0 AND
+            m.`del_flag` = 0
+    </select>
+    <!--查询超级管理员的路由信息(权限菜单)-->
+    <select id="selectAllRouterMenu" resultType="com.xh.entity.Menu">
+        SELECT
+            DISTINCT m.id, m.parent_id, m.menu_name, m.path, m.component, m.visible, m.status,
+                     IFNULL(m.perms,'') AS perms,  m.menu_type, m.icon, m.order_num, m.create_time,m.remark
+        FROM
+            `sys_menu` m
+        WHERE
+            m.`menu_type` IN ('C','M') AND
+            m.`status` = 0 AND
+            m.`del_flag` = 0
+        ORDER BY
+            m.parent_id desc ,m.order_num desc
+    </select>
+
+    <!--查询普通用户的路由信息(权限菜单)-->
+    <select id="selectOtherRouterMenuTreeByUserId" resultType="com.xh.entity.Menu">
+        SELECT
+            DISTINCT m.id, m.parent_id, m.menu_name, m.path, m.component, m.visible, m.status,
+                     IFNULL(m.perms,'') AS perms,  m.menu_type, m.icon, m.order_num, m.create_time
+        FROM
+            `sys_user_role` ur
+                LEFT JOIN `sys_role_menu` rm ON ur.`role_id` = rm.`role_id`
+                LEFT JOIN `sys_menu` m ON m.`id` = rm.`menu_id`
+        WHERE
+            ur.`user_id` = #{userId} AND
+            m.`menu_type` IN ('C','M') AND
+            m.`status` = 0 AND
+            m.`del_flag` = 0
+        ORDER BY
+            m.parent_id desc ,m.order_num desc
+    </select>
+
+    <update id="updateMenuById" parameterType="com.xh.entity.Menu">
+        UPDATE `sys_menu` m
+        SET m.`menu_name` = #{menuName},
+            m.`perms` = #{perms},
+            m.`parent_id` = #{parentId},
+            m.`component` = #{component},
+            m.`path` = #{path},
+            m.`status` = #{status},
+            m.`update_time` = #{updateTime},
+            m.`update_by` = #{updateBy},
+            m.`remark` = #{remark},
+            m.`menu_type` = #{menuType}
+        WHERE  m.`id` = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,34 @@
+server:
+  port: 8989
+spring:
+  # 数据库连接信息
+  datasource:
+    url: jdbc:mysql://localhost:3306/nanjustar?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: qwe123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  servlet:
+    # 文件上传
+    multipart:
+      # 单个上传文件的最大允许大小
+      max-file-size: 20MB
+      # HTTP请求中包含的所有文件的总大小的最大允许值
+      max-request-size: 20MB
+
+  # springboot 2.6版本之后需要配置ant_path_matcher才能生使swagger生成接口文档
+  # 我们目前的springboot版本是2.5.0，不需要配置ant_path_matcher也可正常使用swagger
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+mybatis-plus:
+  configuration:
+    # 日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    global-config:
+      db-config:
+        logic-delete-field: delFlag
+        logic-delete-value: 1
+        logic-not-delete-value: 0
+        id-type: auto
+  mapper-locations: classpath*:/mapper/**/*.xml
